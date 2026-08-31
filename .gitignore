@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# TechJam: large organizer-provided catalog — download separately, verify via
+# data/catalog.jsonl.sha256, don't commit the file itself
+data/catalog.jsonl
+.DS_Store
+
+# macOS
+.DS_Store

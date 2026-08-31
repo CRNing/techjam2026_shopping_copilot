@@ -1,0 +1,6 @@
+# No third-party dependencies required.
+# This agent uses only the Python standard library:
+#   sqlite3, json, re, math, collections, pathlib
+#   (evaluator.py additionally uses: argparse, statistics, random, uuid)
+#
+# Python >= 3.10 is required (the codebase uses `X | Y` union type syntax).

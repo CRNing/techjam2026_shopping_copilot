@@ -64,16 +64,35 @@ The agent is built around four ideas from the problem statement:
 
 ## Repository Structure
 
-```
-.
+```text
+techjam2026_shopping_copilot/
+├── agent.py                  # Agent implementation (retrieval, ranking, dialog state)
 ├── starter/
-│   └── agent.py           # Agent implementation (retrieval, ranking, dialog state)
-├── evaluator.py            # Official local evaluator (Hit Rate@10, MRR, MTTC, TechnicalScore)
+│   ├── __init__.py
+│   └── agent.py               # Compatibility shim: `from agent import Agent`
+│                               #   (keeps evaluator/local_evaluator.py's import path working)
+├── evaluator/
+│   ├── __init__.py
+│   └── local_evaluator.py     # Official local evaluator (Hit Rate@10, MRR, MTTC, TechnicalScore)
 ├── data/
-│   ├── catalog.jsonl       # Frozen product catalog (50,000 items)
-│   └── public_set.jsonl    # 200 public dev sessions
-├── results.json             # Evaluator output (generated)
-└── README.md
+│   ├── catalog.jsonl          # Frozen product catalog (50,000 items) — gitignored, see Setup
+│   ├── public_set.jsonl       # 200 public dev sessions
+│   └── README.md
+├── docs/                       # Organizer-provided reference docs
+│   ├── competition_specification.md
+│   ├── submission_rules.md
+│   ├── agent_api_contract.json
+│   ├── baseline_results.json
+│   └── evaluation_config.json
+├── tests/
+│   ├── __init__.py
+│   └── test_evaluator.py
+├── requirements.txt
+├── README.md
+├── REPORT.md                   # Method, model choice, limitations, latency/cost disclosure
+├── DATA_ATTRIBUTION.md
+├── results.json                 # Evaluator output (generated)
+└── .gitignore
 ```
 
 ## Setup and Installation

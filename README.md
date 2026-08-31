@@ -6,6 +6,11 @@ and ranks products from a frozen Amazon `Clothing_Shoes_and_Jewelry` catalog, an
 whether to return results or ask a targeted clarification question to narrow down the
 candidate pool faster.
 
+> **Submission report:** method, model-choice rationale, limitations, and a
+> disclosure of network access / latency / token usage / estimated cost are
+> documented separately in [`REPORT.md`](./REPORT.md), per the submission
+> rules.
+
 ## Project Overview
 
 The agent is built around four ideas from the problem statement:
@@ -109,8 +114,11 @@ cd <your-repo-name>
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-# 3. Verify the catalog checksum (as provided by the organizer)
-sha256sum -c data/catalog.jsonl.sha256
+# 3. (Optional) If the organizer provides a checksum file for the catalog
+#    (e.g. catalog.jsonl.sha256), verify it before use:
+#      sha256sum -c data/catalog.jsonl.sha256
+#    No checksum file was distributed alongside the version of the catalog
+#    used for this submission.
 
 # No `pip install` step is required — no external dependencies.
 ```
@@ -120,7 +128,7 @@ sha256sum -c data/catalog.jsonl.sha256
 Run the official local evaluator against the public development set:
 
 ```bash
-python3 evaluator.py \
+python3 -m evaluator.local_evaluator \
   --catalog data/catalog.jsonl \
   --dataset data/public_set.jsonl \
   --output results.json
@@ -144,8 +152,11 @@ This prints a summary to stdout and writes full per-session results to
 | Buying | 80 | 0.988 | 0.658 | 2.488 |
 | Intent Override | 30 | 1.000 | 0.830 | 4.033 |
 
-To evaluate a modified agent, edit `starter/agent.py` and rerun the same command —
-the evaluator interface (`Agent.reset` / `Agent.respond`) is unchanged.
+To evaluate a modified agent, edit `agent.py` (the top-level implementation) and
+rerun the same command — `starter/agent.py` is only a compatibility shim
+(`from agent import Agent`) that keeps the evaluator's existing import path
+working, and does not need to be edited. The evaluator interface
+(`Agent.reset` / `Agent.respond`) is unchanged.
 
 ## Limitations & What We'd Improve With More Time
 

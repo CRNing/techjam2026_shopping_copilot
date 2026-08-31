@@ -158,10 +158,10 @@ the evaluator interface (`Agent.reset` / `Agent.respond`) is unchanged.
 
 ## Team Member Contributions
 
-<!-- Fill in for team submissions; omit or remove this section if solo. -->
-
 | Member | Contributions |
 |---|---|
-| _Name_ | _e.g. hybrid retrieval pipeline (RRF, BM25, category/semantic routes)_ |
-| _Name_ | _e.g. dynamic clarification / entropy-based question controller_ |
-| _Name_ | _e.g. evaluation, tuning, README/documentation_ |
+| JUNREN&nbsp;YIN | Hybrid retrieval pipeline — BM25/FTS5 indexing, category retrieval, semantic expansion retrieval, and RRF fusion + reranking (coverage/profile rerank) |
+| RUINING&nbsp;CAO | Dialog state machine & dynamic clarification controller — dual-track (focus/browse) routing, session state management, intent-override / boundary-dodge handling, entropy-driven attribute question selection |
+| SUMMER&nbsp;H | Evaluation, tuning & performance — local evaluator runs, per-scenario metric analysis, parameter tuning (thresholds, RRF_K), latency / token / cost benchmarking |
+| LISA&nbsp;LIU | Documentation & submission packaging — README, REPORT (method / model choice / limitations disclosure), DATA_ATTRIBUTION, requirements.txt, repository structure and GitHub submission |
+| JUNXIAO&nbsp;CHEN | Demo & presentation — demo video, Devpost project description, final Q&A prep, end-to-end and edge-case testing of the full pipeline |

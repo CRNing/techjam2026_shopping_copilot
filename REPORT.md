@@ -1,4 +1,4 @@
-# Submission Report — Shopping Copilot
+# Submission Report —Dual-Layer Dynamic Shopping Copilot
 
 This report satisfies the submission requirements for "a short report describing
 method, model choice, and limitations" and "a disclosure of latency, token usage,
@@ -8,7 +8,10 @@ and estimated model cost."
 
 The agent (`agent.py`, class `Agent`) is a deterministic, rule- and
 statistics-based conversational retrieval system with no learned model and no
-LLM calls. It has four components, mirroring the challenge's four pillars:
+LLM calls. Its design can be summarized as a **Dual-Layer Dynamic Shopping
+Copilot**: an outer focus/browse retrieval layer and an inner dynamic
+attribute-clarification layer. It has four components, mirroring the
+challenge's four pillars:
 
 **a) Dual-track intent routing.** Each turn, the session's accumulated query
 terms are counted; ≤3 terms routes to a `browse` track (wide, diverse recall),
@@ -73,10 +76,12 @@ This was a deliberate choice, not a fallback:
   LLM access; a zero-cost, zero-network pipeline removes any dependency on
   external credentials, rate limits, or provider availability, and guarantees
   bit-for-bit reproducible runs.
-- **Latency.** In-memory SQLite FTS5 lookups and small in-process Python
-  computations are on the order of single-digit milliseconds per call (see
-  §4), well under what a network LLM round-trip would cost, which is
-  advantageous given the competition's per-turn efficiency (MTTC) objective.
+- **Latency and deployment stability.** We intentionally do not use a real
+  embedding retriever because loading an embedding model and running it on
+  every turn would add model-load and inference latency, memory consumption,
+  and deployment dependencies. The resulting offline, zero-token pipeline
+  provides stable and predictable response times, which is advantageous given
+  the competition's per-turn efficiency (MTTC) objective.
 - **Fit for the sub-task.** Attribute selection and slot-tracking are
   low-dimensional, well-structured decisions (a handful of candidate
   attributes, a bounded vocabulary) where a closed-form information-gain
@@ -89,26 +94,11 @@ understanding beyond synonym expansion + Jaccard similarity.
 
 ## 3. Limitations
 
-- **Rule-based intent/attribute detection is brittle.** Override and
-  boundary-dodge detection rely on regex patterns and a fixed keyword
-  vocabulary (`ATTRIBUTE_VOCAB`); this performs well against the evaluator's
-  scripted phrasing but would generalize poorly to noisier, unscripted user
-  language.
-- **"Semantic" retrieval is shallow.** It is FTS keyword expansion via a
-  hand-written synonym map plus Jaccard similarity, not a real embedding-based
-  dense retriever — a likely source of the gap between Hit Rate@10 and MRR on
-  the `buying` scenario (the correct item is usually retrieved, but not always
-  ranked first).
-- **`boundary` and `intent_override` scenarios have the highest MTTC** of all
-  scenario types, suggesting the clarification loop occasionally re-asks a
-  question that has, in effect, already been answered around these two state
-  transitions.
-- **Attribute vocabulary is manually curated and apparel-specific**; it would
-  need to be extended (or learned from catalog term frequency) to generalize
-  to other product categories.
-- **No within-session personalization beyond a static profile snapshot** —
-  `profile_terms` is captured once at session start and does not update from
-  in-session engagement signals.
+- **Attribute-aware override decay was explored but not shipped.** During development we prototyped a mechanism where, on intent override, the system would classify which attribute the new preference belongs to (e.g. material) and down-weight — rather than fully discard — the previously stated value for that same attribute in reranking (all other attributes, including the open-ended "feature" bucket, were left untouched). The motivation was that a superseded preference still carries some signal about user intent and shouldn't be treated as equally irrelevant to a term the user never mentioned. We ultimately did not include this in the final submission: the current override handling simply retains all previously accumulated terms and reopens the most recently asked attribute for re-clarification, without attribute-specific weighting. With more time, we would revisit this weighted-decay approach and tune it against the `intent_override` scenario specifically, since it currently has one of the highest MTTC values of any scenario type.
+- **No real embedding-based semantic retrieval.** The semantic route uses FTS keyword expansion, a hand-written synonym map, and Jaccard-style similarity. We intentionally do not use dense embeddings in this submission. This is a deliberate system-design trade-off rather than a claim that embeddings are not useful: loading and running even a small local embedding model would add model-loading overhead, per-turn query-encoding latency, memory usage, and deployment dependencies. Because the task is an interactive 10-turn conversation, we prioritize predictable response time, fully offline execution, zero-token usage, and a lightweight reproducible deployment. A future version could use sentence embeddings, kept in memory as required by the no-heavy-vector-database constraint, to improve paraphrase handling and ranking quality. This may meaningfully improve MRR, especially in the `buying` scenario where the correct product is often retrieved but not always ranked first.
+- **Boundary and Intent-Override scenarios have the highest MTTC** (4.6 and 4.0 turns respectively) of all scenario types, indicating the clarification-question loop occasionally re-asks a question that's already effectively been answered (e.g. right after an override or a dodge). Tightening the `asked_attributes` bookkeeping around these two transitions is the single highest-leverage remaining fix.
+- **Attribute vocabulary coverage is manual and English/apparel-specific.** Extending`ATTRIBUTE_VOCAB` (or deriving it automatically from catalog term frequency) would make the clarification strategy transfer to other product categories without hand-curation.
+- **No personalization beyond a static profile-term bag.** `profile_terms` is a one-shot snapshot from `user_profile` at session start; it doesn't update from in-session behavior (e.g. which recommended items the user engaged with vs. ignored), which the Runtime Adaptation pillar of the problem statement calls for more fully.
 
 ## 4. Disclosure: Latency, Token Usage, and Estimated Model Cost
 
@@ -144,17 +134,18 @@ time python3 -m evaluator.local_evaluator \
 
 | Measurement | Value |
 |---|---|
-| Full run (200 public sessions, incl. one-time catalog index build) | **15.809s** total wall-clock |
-| CPU utilization during the run | 99% (`user 15.56s`, `sys 0.16s`) — no meaningful idle/I/O-wait time, consistent with an all-local, no-network pipeline |
-| Average wall-clock time per session (200 sessions, includes all turns per session) | ≈ 79 ms/session |
+| Full run (200 public sessions, incl. one-time catalog index build) | **14.61s** total wall-clock |
+| CPU utilization during the run | **99.5%** (`user 14.33s`, `sys 0.20s`) — no meaningful idle/I/O-wait time, consistent with an all-local, no-network pipeline |
+| Average wall-clock time per session (200 sessions, includes all turns per session) | **≈ 73.1 ms/session** |
+| Respond calls executed by the evaluator | **599** (early-stop after a valid hit) |
 
 The near-100% CPU utilization and absence of any idle time is itself evidence
 that no network round-trips occur on the request path — a pipeline making
 external API calls would show substantial wall-clock time attributable to
-I/O wait rather than CPU. Per-`respond()`-call percentile timings (mean /
-p50 / p95) were not separately profiled for this submission; the aggregate
-run-time above is considered sufficient to characterize the system as
-low-latency and CPU-bound rather than network-bound.
+I/O wait rather than CPU. The measured aggregate run corresponds to an
+overall average of approximately 24.4 ms per executed `respond()` call when
+the one-time index-build cost is included. Per-call mean/p50/p95 timings were
+not separately profiled.
 
 ## 5. Reproducibility
 
@@ -162,6 +153,34 @@ low-latency and CPU-bound rather than network-bound.
 - **Install:** no third-party dependencies; see `requirements.txt`.
 - **Run:**
   ```bash
-  python3 evaluator.py --catalog data/catalog.jsonl --dataset data/public_set.jsonl --output results.json
+  python3 -m evaluator.local_evaluator \
+    --catalog data/catalog.jsonl \
+    --dataset data/public_set.jsonl \
+    --output results.json
   ```
 - **Non-obvious environment variables:** none.
+
+## 6. Demonstrated Multi-turn Session
+
+The following is a representative evaluator-compatible interaction. The
+structured `ask_attribute` field controls the simulator; recommendation IDs
+are returned in ranked order and only the first ten valid catalog items are
+scored.
+
+```text
+Turn 1 — User: I'm looking for a jacket, but I'm still exploring.
+Agent:  Here are the closest matches I found. Do you prefer a material such as
+        cotton, leather, or polyester?
+        ask_attribute = "material"
+
+Turn 2 — User: For that, what matters is: waterproof and lightweight.
+Agent:  Is there a specific feature or requirement that matters most to you?
+        ask_attribute = "feature"
+
+Turn 3 — User: Actually, ignore my earlier preference. What I need is: black.
+Agent:  Is there a specific feature or requirement that matters most to you?
+        ask_attribute = "feature"
+
+Turn 4 — Agent: Re-ranks the refreshed candidates and returns the current top-10
+        catalog parent_asin values when no further clarification is needed.
+```

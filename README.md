@@ -36,14 +36,17 @@ The agent is built around four ideas from the problem statement:
 3. **Dynamic, information-theoretic clarification questions.** Instead of a fixed
    question script, each not-yet-asked attribute (material, color, style, use case)
    is scored against the *current* candidate pool as
-   `score = normalized_entropy(attribute) * coverage(attribute)` — i.e. how evenly
-   its values are spread across candidates, weighted by how often the attribute is
-   even detectable in the catalog text. The agent asks about whichever attribute
-   would most reduce uncertainty right now, with an escalating question funnel:
-   material/color → open-ended "feature" → one more attribute *only if it clearly
-   still helps* → a generic "other" catch-all once structured attributes stop being
-   informative. This makes the questioning adaptive per category (e.g. jackets vs.
-   shoes surface different useful attributes) instead of a hardcoded order.
+   `score = normalized_entropy(attribute) * coverage(attribute)`. Entropy measures
+   an attribute's theoretical ability to distinguish between candidates, while
+   coverage acts as a reality-adjustment factor for how many candidates actually
+   contain that attribute. Their product therefore provides a practical estimate of
+   a question's expected value under sparse real-world catalog data. The agent asks
+   about whichever attribute would most reduce uncertainty right now, with an
+   escalating question funnel: material/color → open-ended "feature" → one more
+   attribute *only if it clearly still helps* → a generic "other" catch-all once
+   structured attributes stop being informative. This makes the questioning
+   adaptive per category (e.g. jackets vs. shoes surface different useful
+   attributes) instead of a hardcoded order.
 
 4. **Efficiency-aware stopping.** The agent only asks a question when the candidate
    pool is still large (`> CANDIDATE_THRESHOLD`) and turns remain; otherwise it

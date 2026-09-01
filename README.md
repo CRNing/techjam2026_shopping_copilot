@@ -128,7 +128,7 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 ### Download the Catalog
 
 `data/catalog.jsonl` is **not included in this repository** (58MB, and already
-published by the organizer — see [`DATA_ATTRIBUTION.md`](./DATA_ATTRIBUTION.md)).
+published by the organizer ).
 Download `catalog.jsonl.gz` from the organizer's participant-kit GitHub Release:
 
 https://github.com/TechJam2026/techjam-conversational-search/releases/tag/participant-kit
@@ -183,12 +183,35 @@ working, and does not need to be edited. The evaluator interface
 
 ## Limitations & What We'd Improve With More Time
 
-- **Rule-based attribute/intent detection is brittle.** Override, boundary-dodge,
-  and attribute classification currently rely on regex and small keyword vocabularies
-  (`ATTRIBUTE_VOCAB`). This works well against the evaluator's scripted phrasing but
-  would generalize poorly to noisier, real-world user language. A learned intent/slot
-  classifier (even a small fine-tuned model) would be more robust.
-- **No real embedding-based semantic retrieval.** The semantic route uses FTS keyword expansion, a hand-written synonym map, and Jaccard-style similarity. We intentionally do not use dense embeddings in this submission. This is a deliberate system-design trade-off rather than a claim that embeddings are not useful: loading and running even a small local embedding model would add model-loading overhead, per-turn query-encoding latency, memory usage, and deployment dependencies. Because the task is an interactive 10-turn conversation, we prioritize predictable response time, fully offline execution, zero-token usage, and a lightweight reproducible deployment. A future version could use sentence embeddings, kept in memory as required by the no-heavy-vector-database constraint, to improve paraphrase handling and ranking quality. This may meaningfully improve MRR, especially in the buying scenario where the correct product is often retrieved but not always ranked first.
+- **Attribute-aware override decay was explored but not shipped.** During
+  development we prototyped a mechanism where, on intent override, the
+  system would classify which attribute the new preference belongs to (e.g.
+  material) and down-weight — rather than fully discard — the previously
+  stated value for that same attribute in reranking (all other attributes,
+  including the open-ended "feature" bucket, were left untouched). The
+  motivation was that a superseded preference still carries some signal
+  about user intent and shouldn't be treated as equally irrelevant to a term
+  the user never mentioned. We ultimately did not include this in the final
+  submission: the current override handling simply retains all previously
+  accumulated terms and reopens the most recently asked attribute for
+  re-clarification, without attribute-specific weighting. With more time, we
+  would revisit this weighted-decay approach and tune it against the
+  `intent_override` scenario specifically, since it currently has one of the
+  highest MTTC values of any scenario type.
+- **No real embedding-based semantic retrieval.** The semantic route uses FTS
+  keyword expansion, a hand-written synonym map, and Jaccard-style similarity.
+  We intentionally do not use dense embeddings in this submission. This is a
+  deliberate system-design trade-off rather than a claim that embeddings are
+  not useful: loading and running even a small local embedding model would add
+  model-loading overhead, per-turn query-encoding latency, memory usage, and
+  deployment dependencies. Because the task is an interactive 10-turn
+  conversation, we prioritize predictable response time, fully offline
+  execution, zero-token usage, and a lightweight reproducible deployment. A
+  future version could use sentence embeddings, kept in memory as required by
+  the no-heavy-vector-database constraint, to improve paraphrase handling and
+  ranking quality. This may meaningfully improve MRR, especially in the
+  `buying` scenario where the correct product is often retrieved but not
+  always ranked first.
 - **Boundary and Intent-Override scenarios have the highest MTTC** (4.6 and 4.0 turns
   respectively) of all scenario types, indicating the clarification-question loop
   occasionally re-asks a question that's already effectively been answered (e.g. right

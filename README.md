@@ -188,13 +188,7 @@ working, and does not need to be edited. The evaluator interface
   (`ATTRIBUTE_VOCAB`). This works well against the evaluator's scripted phrasing but
   would generalize poorly to noisier, real-world user language. A learned intent/slot
   classifier (even a small fine-tuned model) would be more robust.
-- **No real embedding-based semantic retrieval.** "Semantic" recall today is FTS
-  keyword expansion via a hand-written synonym map (`SYNTH_MAP`) plus Jaccard
-  similarity — cheap and dependency-free, but shallow compared to a real dense vector
-  retriever. Swapping in sentence embeddings (even a small local model, kept in-memory
-  per the "no heavy vector DB" constraint) should meaningfully lift MRR, especially on
-  the `buying` scenario where MRR currently lags Hit Rate@10 (0.658 vs 0.988 — the
-  correct item is usually *found* but not always ranked first).
+- **No real embedding-based semantic retrieval.** The semantic route uses FTS keyword expansion, a hand-written synonym map, and Jaccard-style similarity. We intentionally do not use dense embeddings in this submission. This is a deliberate system-design trade-off rather than a claim that embeddings are not useful: loading and running even a small local embedding model would add model-loading overhead, per-turn query-encoding latency, memory usage, and deployment dependencies. Because the task is an interactive 10-turn conversation, we prioritize predictable response time, fully offline execution, zero-token usage, and a lightweight reproducible deployment. A future version could use sentence embeddings, kept in memory as required by the no-heavy-vector-database constraint, to improve paraphrase handling and ranking quality. This may meaningfully improve MRR, especially in the buying scenario where the correct product is often retrieved but not always ranked first.
 - **Boundary and Intent-Override scenarios have the highest MTTC** (4.6 and 4.0 turns
   respectively) of all scenario types, indicating the clarification-question loop
   occasionally re-asks a question that's already effectively been answered (e.g. right

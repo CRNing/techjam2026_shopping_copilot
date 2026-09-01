@@ -120,14 +120,23 @@ cd <your-repo-name>
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-# 3. (Optional) If the organizer provides a checksum file for the catalog
-#    (e.g. catalog.jsonl.sha256), verify it before use:
-#      sha256sum -c data/catalog.jsonl.sha256
-#    No checksum file was distributed alongside the version of the catalog
-#    used for this submission.
+# 3. Download the catalog (not bundled in this repo — see below)
 
 # No `pip install` step is required — no external dependencies.
 ```
+
+### Download the Catalog
+
+`data/catalog.jsonl` is **not included in this repository** (58MB). Download
+`catalog.jsonl.gz` from this repository's
+[GitHub Release](https://github.com/CRNing/techjam2026_shopping_copilot/releases/tag/v1.0),
+then run:
+
+​```bash
+gzip -dk catalog.jsonl.gz
+mv catalog.jsonl data/catalog.jsonl
+shasum -a 256 -c SHA256SUMS
+​```
 
 ## Steps to Reproduce Results
 

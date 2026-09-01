@@ -183,11 +183,21 @@ working, and does not need to be edited. The evaluator interface
 
 ## Limitations & What We'd Improve With More Time
 
-- **Rule-based attribute/intent detection is brittle.** Override, boundary-dodge,
-  and attribute classification currently rely on regex and small keyword vocabularies
-  (`ATTRIBUTE_VOCAB`). This works well against the evaluator's scripted phrasing but
-  would generalize poorly to noisier, real-world user language. A learned intent/slot
-  classifier (even a small fine-tuned model) would be more robust.
+- **Attribute-aware override decay was explored but not shipped.** During
+  development we prototyped a mechanism where, on intent override, the
+  system would classify which attribute the new preference belongs to (e.g.
+  material) and down-weight — rather than fully discard — the previously
+  stated value for that same attribute in reranking (all other attributes,
+  including the open-ended "feature" bucket, were left untouched). The
+  motivation was that a superseded preference still carries some signal
+  about user intent and shouldn't be treated as equally irrelevant to a term
+  the user never mentioned. We ultimately did not include this in the final
+  submission: the current override handling simply retains all previously
+  accumulated terms and reopens the most recently asked attribute for
+  re-clarification, without attribute-specific weighting. With more time, we
+  would revisit this weighted-decay approach and tune it against the
+  `intent_override` scenario specifically, since it currently has one of the
+  highest MTTC values of any scenario type.
 - **No real embedding-based semantic retrieval.** The semantic route uses FTS
   keyword expansion, a hand-written synonym map, and Jaccard-style similarity.
   We intentionally do not use dense embeddings in this submission. This is a

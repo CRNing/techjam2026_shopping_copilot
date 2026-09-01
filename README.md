@@ -17,10 +17,13 @@ The agent is built around four ideas from the problem statement:
 
 1. **Dual-track hybrid retrieval.** Every turn is routed to either a `focus` track
    (query has accumulated ≥4 meaningful terms → tight, high-precision filtering via
-   BM25 keyword + category match) or a `browse` track (fewer terms → wider, diverse
-   recall combining keyword, lightweight semantic expansion, category, long-term user
-   profile, and catalog popularity). All routes are fused with **Reciprocal Rank
-   Fusion (RRF)**, then reranked by term-coverage and semantic similarity.
+   BM25 keyword + category match only) or a `browse` track (fewer terms → wider,
+   diverse recall combining keyword, lightweight semantic expansion, category,
+   long-term user profile, and catalog popularity — five signals total). Both
+   tracks' candidates are fused with **Reciprocal Rank Fusion (RRF)**, then reranked
+   in three tiers — exact term-match count, term-coverage ratio, then semantic
+   similarity. The `browse` track additionally applies one more reranking pass
+   against the user's long-term profile terms, which the `focus` track skips.
 
 2. **Stateful multi-turn dialog.** Session state accumulates terms turn over turn
    (incremental slot filling). Two conversational signals are detected explicitly:

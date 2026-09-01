@@ -216,5 +216,5 @@ working, and does not need to be edited. The evaluator interface
 | JUNREN&nbsp;YIN | Hybrid retrieval pipeline — BM25/FTS5 indexing, category retrieval, semantic expansion retrieval, and RRF fusion + reranking (coverage/profile rerank) |
 | RUINING&nbsp;CAO | Dialog state machine & dynamic clarification controller — dual-track (focus/browse) routing, session state management, intent-override / boundary-dodge handling, entropy-driven attribute question selection |
 | TIANRUN&nbsp;HUANG | Evaluation, tuning & performance — local evaluator runs, per-scenario metric analysis, parameter tuning (thresholds, RRF_K), latency / token / cost benchmarking |
-| LISA&nbsp;LIU | Documentation & submission packaging — README, REPORT (method / model choice / limitations disclosure), DATA_ATTRIBUTION, requirements.txt, repository structure and GitHub submission |
+| YIWEI&nbsp;LIU | Documentation & submission packaging — README, REPORT (method / model choice / limitations disclosure), DATA_ATTRIBUTION, requirements.txt, repository structure and GitHub submission |
 | JUNXIAO&nbsp;CHEN | Demo & presentation — demo video, Devpost project description, final Q&A prep, end-to-end and edge-case testing of the full pipeline |

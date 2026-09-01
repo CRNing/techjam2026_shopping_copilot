@@ -128,7 +128,7 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 ### Download the Catalog
 
 `data/catalog.jsonl` is **not included in this repository** (58MB, and already
-published by the organizer — see [`DATA_ATTRIBUTION.md`](./DATA_ATTRIBUTION.md)).
+published by the organizer ).
 Download `catalog.jsonl.gz` from the organizer's participant-kit GitHub Release:
 
 https://github.com/TechJam2026/techjam-conversational-search/releases/tag/participant-kit

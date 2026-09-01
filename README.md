@@ -127,16 +127,24 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
 ### Download the Catalog
 
-`data/catalog.jsonl` is **not included in this repository** (58MB). Download
-`catalog.jsonl.gz` from this repository's
-[GitHub Release](https://github.com/CRNing/techjam2026_shopping_copilot/releases/tag/v1.0),
+`data/catalog.jsonl` is **not included in this repository** (58MB, and already
+published by the organizer — see [`DATA_ATTRIBUTION.md`](./DATA_ATTRIBUTION.md)).
+Download `catalog.jsonl.gz` from the organizer's participant-kit GitHub Release:
+
+https://github.com/TechJam2026/techjam-conversational-search/releases/tag/participant-kit
+
 then run:
 
-​```bash
+```bash
 gzip -dk catalog.jsonl.gz
 mv catalog.jsonl data/catalog.jsonl
-shasum -a 256 -c SHA256SUMS
-​```
+```
+
+Verify the downloaded file using the organizer's published `SHA256SUMS` file:
+
+```bash
+shasum -a 256 -c SHA256SUMS   # macOS/Linux
+```
 
 ## Steps to Reproduce Results
 
